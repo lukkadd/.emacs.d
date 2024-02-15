@@ -9,3 +9,16 @@
 
 # Undo-tree save-files
 *.~undo-tree
+
+auto-save-list/*
+backups/*
+elpaca/*
+org-persist/*
+server/*
+transient/*
+
+sessions
+tramp
+recentf
+projectile.cache
+projectile-bookmarks.*
