@@ -110,7 +110,7 @@ version-control t)
   (setq dashboard-set-file-icons t)
   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
   ;;(setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-  (setq dashboard-startup-banner "C:/Users/lukka/AppData/Roaming/.emacs.d/images/logo.png")  ;; use custom image as banner
+  (setq dashboard-startup-banner (concat user-emacs-directory "/images/logo.png")); use custom image as banner
   (setq dashboard-center-content t) ;; set to 't' for centered content
   (setq dashboard-items '((recents . 5)
                           (agenda . 5 )
@@ -126,7 +126,7 @@ version-control t)
 (use-package projectile
   :config
   (projectile-mode 1))
-(setq projectile-project-search-path '("C:/Users/lukka/Code"))
+(setq projectile-project-search-path '("C:/Users/lukka/Projects"))
 
 ;; Expands to: (elpaca evil (use-package evil :demand t))
 (use-package evil
@@ -180,19 +180,19 @@ version-control t)
   (lukkadd/leader-keys
     "b" '(:ignore t :wk "Bookmarks/Buffers")
     "b b" '(switch-to-buffer :wk "Switch to buffer")
-    "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
-    "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
+    ;; "b c" '(clone-indirect-buffer :wk "Create indirect buffer copy in a split")
+    ;; "b C" '(clone-indirect-buffer-other-window :wk "Clone indirect buffer in new window")
     "b d" '(bookmark-delete :wk "Delete bookmark")
     "b i" '(ibuffer :wk "Ibuffer")
     "b k" '(kill-current-buffer :wk "Kill current buffer")
     "b K" '(kill-some-buffers :wk "Kill multiple buffers")
     "b l" '(list-bookmarks :wk "List bookmarks")
     "b m" '(bookmark-set :wk "Set bookmark")
-    "b n" '(next-buffer :wk "Next buffer")
-    "b p" '(previous-buffer :wk "Previous buffer")
+    ;; "b n" '(next-buffer :wk "Next buffer")
+    ;; "b p" '(previous-buffer :wk "Previous buffer")
     "b r" '(revert-buffer :wk "Reload buffer")
     "b R" '(rename-buffer :wk "Rename buffer")
-    "b s" '(basic-save-buffer :wk "Save buffer")
+    ;; "b s" '(basic-save-buffer :wk "Save buffer")
     "b S" '(save-some-buffers :wk "Save multiple buffers")
     "b w" '(bookmark-save :wk "Save current bookmarks to bookmark file"))
 
@@ -227,11 +227,12 @@ version-control t)
     "f i" '((lambda () (interactive)
               (find-file "~/.emacs.d/init.el")) 
             :wk "Open emacs init.el")
-    "f j" '(counsel-file-jump :wk "Jump to a file below current directory")
+    ;; "f j" '(counsel-file-jump :wk "Jump to a file below current directory")
     "f l" '(counsel-locate :wk "Locate a file")
     "f r" '(counsel-recentf :wk "Find recent files")
-    "f u" '(sudo-edit-find-file :wk "Sudo find file")
-    "f U" '(sudo-edit :wk "Sudo edit file"))
+    ;; "f u" '(sudo-edit-find-file :wk "Sudo find file")
+    ;; "f U" '(sudo-edit :wk "Sudo edit file")
+)
 
   (lukkadd/leader-keys
     "g" '(:ignore t :wk "Git")    
@@ -311,7 +312,7 @@ version-control t)
   (lukkadd/leader-keys
     "o" '(:ignore t :wk "Open")
     "o d" '(dashboard-open :wk "Dashboard")
-    "o e" '(elfeed :wk "Elfeed RSS")
+    ;; "o e" '(elfeed :wk "Elfeed RSS")
     "o f" '(make-frame :wk "Open buffer in new frame")
     "o F" '(select-frame-by-name :wk "Select frame by name"))
 
@@ -331,8 +332,8 @@ version-control t)
     "t" '(:ignore t :wk "Toggle")
     "t e" '(eshell-toggle :wk "Toggle eshell")
     "t f" '(flycheck-mode :wk "Toggle flycheck")
-    "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
-    "t o" '(org-mode :wk "Toggle org mode")
+    ;; "t l" '(display-line-numbers-mode :wk "Toggle line numbers")
+    ;; "t o" '(org-mode :wk "Toggle org mode")
     "t r" '(rainbow-mode :wk "Toggle rainbow mode")
     "t t" '(visual-line-mode :wk "Toggle truncated lines"))
 
@@ -415,7 +416,7 @@ version-control t)
 	  which-key-min-display-lines 6
 	  which-key-side-window-slot -10
 	  which-key-side-window-max-height 0.25
-	  which-key-idle-delay 0.8
+	  which-key-idle-delay 0.5
 	  which-key-max-description-length 25
 	  which-key-allow-imprecise-window-fit t
 	  which-key-separator " -> " ))
@@ -449,18 +450,11 @@ version-control t)
     (evil-define-key 'normal git-timemachine-mode-map (kbd "C-k") 'git-timemachine-show-next-revision)
 )
 
-(defun +elpaca-unload-seq (e)
-  (and (featurep 'seq) (unload-feature 'seq t))
-  (elpaca--continue-build e))
-
-(defun +elpaca-seq-build-steps ()
-  (append (butlast (if (file-exists-p (expand-file-name "seq" elpaca-builds-directory))
-                       elpaca--pre-built-steps elpaca-build-steps))
-          (list '+elpaca-unload-seq 'elpaca--activate-package)))
-
-(use-package seq :ensure `(seq :build ,(+elpaca-seq-build-steps)))
+(use-package transient
+  :ensure t)
 (use-package magit 
   :after seq
+  :after transient
   :ensure t)
 
 (use-package flycheck
