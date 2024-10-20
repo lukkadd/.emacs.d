@@ -370,10 +370,11 @@ version-control t)
 (global-visual-line-mode t)
 (setq display-line-numbers-type 'relative)
 
-(delete-selection-mode 1)    ;; You can select text and delete it by typing.
+;; (delete-selection-mode 1)    ;; You can select text and delete it by typing.
 (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
-(electric-pair-mode 1)       ;; Turns on automatic parens pairing
-;; The following prevents <> from auto-pairing when electric-pair-mode is on.
+;; (electric-pair-mode 1)       ;; Turns on automatic parens pairing
+;; ;
+					; The following prevents <> from auto-pairing when electric-pair-mode is on.
 ;; Otherwise, org-tempo is broken when you try to <s TAB...
 (add-hook 'org-mode-hook (lambda ()
            (setq-local electric-pair-inhibit-predicate
@@ -549,32 +550,70 @@ version-control t)
 ;; Automatically save perspective states to file when Emacs exits.
 (add-hook 'kill-emacs-hook #'persp-state-save)
 
+(defun efs/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . efs/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+  :config
+  (lsp-enable-which-key-integration t))
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-doc-position 'bottom))
+(use-package lsp-treemacs
+  :after lsp)
+(use-package lsp-ivy
+  :after lsp)
+(use-package dap-mode
+  ;; Uncomment the config below if you want all UI panes to be hidden by default!
+  ;; :custom
+  ;; (lsp-enable-dap-auto-configure nil)
+  ;; :config
+  ;; (dap-ui-mode 1)
+  :commands dap-debug
+  :config
+  ;; Set up Node debugging
+  (require 'dap-node)
+  (dap-node-setup) ;; Automatically installs Node debug adapter if needed
+
+  ;; Bind `C-c l d` to `dap-hydra` for easy access
+  (general-define-key
+    :keymaps 'lsp-mode-map
+    :prefix lsp-keymap-prefix
+    "d" '(dap-hydra t :wk "debugger")))
+(use-package pyvenv
+  :after python-mode
+  :config
+  (pyvenv-mode 1))
+
 (use-package haskell-mode)
 (use-package lua-mode)
 (use-package php-mode)
 (use-package elixir-mode)
-(use-package nim-mode
+(use-package python-mode
+  :ensure t
+  :hook (python-mode . lsp-deferred)
+  :custom
+  ;; NOTE: Set these if Python 3 is called "python3" on your system!
+  ;; (python-shell-interpreter "python3")
+  ;; (dap-python-executable "python3")
+  (dap-python-debugger 'debugpy)
   :config
-  (defun my--init-nim-mode ()
-    "Local init function for `nim-mode'."
+  (lsp-register-custom-settings
+   '(("pylsp.plugins.flake8.enabled" t t)
+     ("pylsp.plugins.autopep8.enabled" t t)
+     ("pylsp.plugins.black.enabled" t t)
+     ("pylsp-plugins.isort.enabled" t t)
+     ("pylsp.plugins.rope-autoimport.enabled" t t)))
+  (require 'dap-python))
 
-    (local-set-key (kbd "TAB") 'nim-indent-shift-right)
-    (local-set-key (kbd "<backtab>") 'nim-indent-shift-left)
-
-    ;; Make files in the nimble folder read only by default.
-    ;; This can prevent to edit them by accident.
-    (when (string-match "/\.nimble/" (or (buffer-file-name) "")) (read-only-mode 1))
-
-
-    ;; The following modes are disabled for Nim files just for the case
-    ;; that they are enabled globally.
-    ;; Anything that is based on smie can cause problems.
-    (auto-fill-mode 0)
-    (electric-indent-local-mode 0)
-    )
-
-  (add-hook 'nim-mode-hook 'my--init-nim-mode)
-  )
+(use-package evil-nerd-commenter 
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
 (global-set-key [escape] 'keyboard-escape-quit)
 
