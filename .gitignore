@@ -13,9 +13,12 @@
 auto-save-list/*
 backups/*
 elpaca/*
+elpa/*
 org-persist/*
 server/*
 transient/*
+
+var/*
 
 sessions
 tramp
