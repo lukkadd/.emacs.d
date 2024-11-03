@@ -3,6 +3,10 @@
 
 ;(setq debug-on-error t)
 
+;; Set fonts that are available on your system
+(defvar lukkadd/fixed-pitch-font "MartianMono NFM")
+(defvar lukkadd/variable-pitch-font "Rockwell")
+
 ;; You will most likely need to adjust this font size for your system!
 (defvar lukkadd/default-font-size 120)
 (defvar lukkadd/default-variable-font-size 160)
@@ -19,9 +23,10 @@
 
 (set-language-environment "UTF-8")
 
-;; The default is 800 kilobytes.  Measured in bytes.
+;; Allow emacs to use more memory to minimize multiple garbage collections
 (setq gc-cons-threshold (* 50 1000 1000))
 
+;; Add hook to emacs startup that displays the startup time in *Messages*
 (defun lukkadd/display-startup-time ()
   (message "Emacs loaded in %s with %d garbage collections."
            (format "%.2f seconds"
@@ -97,13 +102,13 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-(set-face-attribute 'default nil :font "MartianMono NFM" :height lukkadd/default-font-size)
+(set-face-attribute 'default nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "MartianMono NFM" :height lukkadd/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Fantasque Sans Mono" :height lukkadd/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular)
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -236,12 +241,17 @@
   "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 (use-package dashboard
-  :ensure t
+
   :config
   (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-center-content t)
-                                        ;(setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "/assets/d20.svg"))
+  (setq dashboard-items '((recents   . 5)
+                          (bookmarks . 5)
+                          (projects  . 5)
+                          (agenda    . 5)
+                          (registers . 5)))
+  (setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "/assets/d20.png"))
   (dashboard-setup-startup-hook))
 
 (defun lukkadd/org-font-setup ()
@@ -255,7 +265,7 @@
                   (org-level-6 . 1.0)
                   (org-level-7 . 1.0)
                   (org-level-8 . 1.0)))
-    (set-face-attribute (car face) nil :font "Fantasque Sans Mono" :weight 'regular :height (cdr face)))
+    (set-face-attribute (car face) nil :font lukkadd/variable-pitch-font :weight 'regular :height (cdr face)))
 
   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -433,14 +443,14 @@
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'lukkadd/org-babel-tangle-config)))
 
 (use-package git-gutter
-  :ensure t
+
   :hook (prog-mode . git-gutter-mode)
   :config
                                         ;(setq git-gutter:update-interval 0.02)
   )
 
 (use-package git-gutter-fringe
-  :ensure t
+
   :config
   (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
@@ -494,7 +504,7 @@
   (setq typescript-indent-level 2))
 
 (use-package python-mode
-  :ensure t
+
   :hook (python-mode . lsp-deferred)
   :custom
   ;; NOTE: Set these if Python 3 is called "python3" on your system!
@@ -509,8 +519,35 @@
   :config
   (pyvenv-mode 1))
 
+(defun custom-cpp-compile()
+    "Set the compile command to use my custom build script"
+    (interactive)
+    (cd (projectile-project-root))
+    (compile "build.bat")
+    ;(other-window 1)
+    )
+
+(defun custom-cpp-run()
+  "Run cpp project using my run.bat"
+  (interactive)
+   (cd (projectile-project-root))
+  (let ((script-path "run.bat"))
+  (compile script-path)
+  ;(other-window 1)
+  ))
+
+(general-define-key
+ :keymaps 'c++-mode-map
+ "<f5>" 'custom-cpp-compile)
+
+(general-define-key
+ :keymaps 'c++-mode-map
+ "<f6>" 'custom-cpp-run)
+
+(add-hook 'c++-mode-hook 'lsp)
+
 (use-package php-mode
-  :ensure t)
+  )
 
 (use-package company
   :after lsp-mode

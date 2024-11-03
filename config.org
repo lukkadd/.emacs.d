@@ -4,9 +4,7 @@
 * Welcome!
 
 This is my personal emacs configuration. This file generates [[file:init.el][init.el]] which can be loaded by Emacs at startup.
-
--------------------------------REWRITE THIS SECTION
-The following variables are used to tweak some of the configuration pieces for use in the live streams so you might need to adjust them for your local machine if you try to use this configuration directly.
+I've declared some variables at the top of this file to make it easier to adapt it for different computers where directories/fonts might change.
 
 #+begin_src emacs-lisp
 
@@ -14,6 +12,10 @@ The following variables are used to tweak some of the configuration pieces for u
   ;;       in Emacs and init.el will be generated automatically!
 
   ;(setq debug-on-error t)
+
+  ;; Set fonts that are available on your system
+  (defvar lukkadd/fixed-pitch-font "MartianMono NFM")
+  (defvar lukkadd/variable-pitch-font "Rockwell")
 
   ;; You will most likely need to adjust this font size for your system!
   (defvar lukkadd/default-font-size 120)
@@ -40,9 +42,10 @@ In this document I've added links in many places that lead you to documentation 
 
 #+begin_src emacs-lisp
 
-  ;; The default is 800 kilobytes.  Measured in bytes.
+  ;; Allow emacs to use more memory to minimize multiple garbage collections
   (setq gc-cons-threshold (* 50 1000 1000))
 
+  ;; Add hook to emacs startup that displays the startup time in *Messages*
   (defun lukkadd/display-startup-time ()
     (message "Emacs loaded in %s with %d garbage collections."
              (format "%.2f seconds"
@@ -103,17 +106,18 @@ You can also use =M-x auto-package-update-now= to update right now!
 
 We use the [[https://github.com/emacscollective/no-littering/blob/master/no-littering.el][no-littering]] package to keep folders where we edit files and the Emacs configuration folder clean!  It knows about a wide variety of variables for built in Emacs features as well as those from community packages so it can be much easier than finding and setting these variables yourself.
 
+
 #+begin_src emacs-lisp
 
-      ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
-      ;; reliably, set `user-emacs-directory` before loading no-littering!
-      ;(setq user-emacs-directory "~/.cache/emacs")
+        ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
+        ;; reliably, set `user-emacs-directory` before loading no-littering!
+        ;(setq user-emacs-directory "~/.cache/emacs")
 
-      (use-package no-littering)
+        (use-package no-littering)
 
-  (let ((dir (no-littering-expand-var-file-name "lock-files/")))
-      (make-directory dir t)
-      (setq lock-file-name-transforms `((".*" ,dir t))))
+    (let ((dir (no-littering-expand-var-file-name "lock-files/")))
+        (make-directory dir t)
+        (setq lock-file-name-transforms `((".*" ,dir t))))
 
 #+end_src
 
@@ -160,13 +164,13 @@ I am using the Martian Mono Nerd Fonts for default and fixed pitch and Fantasque
 
 #+begin_src emacs-lisp
 
-(set-face-attribute 'default nil :font "MartianMono NFM" :height lukkadd/default-font-size)
+(set-face-attribute 'default nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "MartianMono NFM" :height lukkadd/default-font-size)
+(set-face-attribute 'fixed-pitch nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Fantasque Sans Mono" :height lukkadd/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular)
 
 #+end_src
 
@@ -274,6 +278,8 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 ** Ivy and Counsel
 
+I don't reeeealy know why this packages are necessary, but I haven't seen a config without a variant of these so I'll keep it.
+
 [[https://oremacs.com/swiper/][Ivy]] is an excellent completion framework for Emacs.  It provides a minimal yet powerful selection menu that appears when you open files, switch buffers, and for many other tasks in Emacs.  Counsel is a customized set of commands to replace `find-file` with `counsel-find-file`, etc which provide useful commands for each of the default completion commands.
 
 [[https://github.com/Yevgnen/ivy-rich][ivy-rich]] adds extra columns to a few of the Counsel commands to provide more information about each item.
@@ -335,8 +341,6 @@ This Prescient configuration is optimized for use in System Crafters videos and 
 
 ** Helpful Help Commands
 
------ CONSIDER REMOVING ------
-
 [[https://github.com/Wilfred/helpful][Helpful]] adds a lot of very helpful (get it?) information to Emacs' =describe-= command buffers.  For example, if you use =describe-function=, you will not only get the documentation about the function, you will also see the source code of the function and where it gets used in other places in the Emacs configuration.  It is very useful for figuring out how things work in Emacs.
 
 #+begin_src emacs-lisp
@@ -377,12 +381,17 @@ This is an example of using [[https://github.com/abo-abo/hydra][Hydra]] to desig
 * Dashboard
 #+begin_src emacs-lisp
   (use-package dashboard
-    :ensure t
+
     :config
     (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
     (setq dashboard-startup-banner 'logo)
     (setq dashboard-center-content t)
-                                          ;(setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "/assets/d20.svg"))
+    (setq dashboard-items '((recents   . 5)
+                            (bookmarks . 5)
+                            (projects  . 5)
+                            (agenda    . 5)
+                            (registers . 5)))
+    (setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "/assets/d20.png"))
     (dashboard-setup-startup-hook))
 #+end_src
 
@@ -407,7 +416,7 @@ The =lukkadd/org-font-setup= function configures various text faces to tweak the
                     (org-level-6 . 1.0)
                     (org-level-7 . 1.0)
                     (org-level-8 . 1.0)))
-      (set-face-attribute (car face) nil :font "Fantasque Sans Mono" :weight 'regular :height (cdr face)))
+      (set-face-attribute (car face) nil :font lukkadd/variable-pitch-font :weight 'regular :height (cdr face)))
 
     ;; Ensure that anything that should be fixed-pitch in Org files appears that way
     (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
@@ -646,14 +655,14 @@ This snippet adds a hook to =org-mode= buffers so that =lukkadd/org-babel-tangle
 
 #+begin_src emacs-lisp
   (use-package git-gutter
-    :ensure t
+    
     :hook (prog-mode . git-gutter-mode)
     :config
                                           ;(setq git-gutter:update-interval 0.02)
     )
 
   (use-package git-gutter-fringe
-    :ensure t
+    
     :config
     (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
@@ -674,17 +683,17 @@ The =which-key= integration adds helpful descriptions of the various keys so you
 
 #+begin_src emacs-lisp
 
-  (defun lukkadd/lsp-mode-setup ()
-    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-    (lsp-headerline-breadcrumb-mode))
+        (defun lukkadd/lsp-mode-setup ()
+          (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+          (lsp-headerline-breadcrumb-mode))
 
-  (use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook (lsp-mode . lukkadd/lsp-mode-setup)
-    :init
-    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
-    :config
-    (lsp-enable-which-key-integration t))
+        (use-package lsp-mode
+          :commands (lsp lsp-deferred)
+          :hook (lsp-mode . lukkadd/lsp-mode-setup)
+          :init
+          (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+          :config
+          (lsp-enable-which-key-integration t))
 
 #+end_src
 
@@ -803,7 +812,7 @@ There are a number of other language servers for Python so if you find that =pyl
 #+begin_src emacs-lisp
 
   (use-package python-mode
-    :ensure t
+    
     :hook (python-mode . lsp-deferred)
     :custom
     ;; NOTE: Set these if Python 3 is called "python3" on your system!
@@ -827,13 +836,44 @@ You can use the pyvenv package to use =virtualenv= environments in Emacs.  The =
 
 #+end_src
 
-** PHP
+*** C++
+
+#+begin_src emacs-lisp
+    (defun custom-cpp-compile()
+      "Set the compile command to use my custom build script"
+      (interactive)
+      (cd (projectile-project-root))
+      (compile "build.bat")
+      ;(other-window 1)
+      )
+
+  (defun custom-cpp-run()
+    "Run cpp project using my run.bat"
+    (interactive)
+     (cd (projectile-project-root))
+    (let ((script-path "run.bat"))
+    (compile script-path)
+    ;(other-window 1)
+    ))
+
+  (general-define-key
+   :keymaps 'c++-mode-map
+   "<f5>" 'custom-cpp-compile)
+
+  (general-define-key
+   :keymaps 'c++-mode-map
+   "<f6>" 'custom-cpp-run)
+
+  (add-hook 'c++-mode-hook 'lsp)
+ #+end_src
+
+*** PHP
 
 Configuring php-mode
 
 #+begin_src emacs-lisp
   (use-package php-mode
-    :ensure t)
+    )
 #+end_src
 
 ** Company Mode
