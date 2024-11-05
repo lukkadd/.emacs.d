@@ -1,14 +1,12 @@
 ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
 ;;       in Emacs and init.el will be generated automatically!
 
-;(setq debug-on-error t)
-
 ;; Set fonts that are available on your system
 (defvar lukkadd/fixed-pitch-font "MartianMono NFM")
-(defvar lukkadd/variable-pitch-font "Rockwell")
+(defvar lukkadd/variable-pitch-font "Arial")
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar lukkadd/default-font-size 120)
+(defvar lukkadd/default-font-size 105)
 (defvar lukkadd/default-variable-font-size 160)
 
 ;; Make frame transparency overridable
@@ -102,6 +100,7 @@
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+;; Set emacs UI font
 (set-face-attribute 'default nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the fixed pitch face
@@ -109,6 +108,14 @@
 
 ;; Set the variable pitch face
 (set-face-attribute 'variable-pitch nil :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular)
+
+;; For new frames
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (with-selected-frame frame
+              (set-face-attribute 'default nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
+              (set-face-attribute 'fixed-pitch frame :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
+              (set-face-attribute 'variable-pitch frame :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular))))
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -157,6 +164,13 @@
   :after evil
   :config
   (evil-collection-init))
+
+(use-package evil-escape
+  :config
+  (setq-default evil-escape-key-sequence "jk")
+  (evil-escape-mode))
+
+(evil-set-undo-system 'undo-redo)
 
 (use-package kanagawa-themes
   :init (load-theme 'kanagawa-dragon t))
@@ -214,7 +228,7 @@
   (ivy-prescient-enable-filtering nil)
   :config
   ;; Uncomment the following line to have sorting remembered across sessions!
-  ;(prescient-persist-mode 1)
+                                        ;(prescient-persist-mode 1)
   (ivy-prescient-mode 1))
 
 (use-package helpful
@@ -296,115 +310,115 @@
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-    (list (concat lukkadd/org-folder "/Tasks.org")
-          (concat lukkadd/org-folder "/Habits.org")
-          (concat lukkadd/org-folder "/Birthdays.org")))
+        (list (concat lukkadd/org-folder "/Tasks.org")
+              (concat lukkadd/org-folder "/Habits.org")
+              (concat lukkadd/org-folder "/Birthdays.org")))
 
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
 
   (setq org-todo-keywords
-    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+          (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-    '(("Archive.org" :maxlevel . 1)
-      ("Tasks.org" :maxlevel . 1)))
+        '(("Archive.org" :maxlevel . 1)
+          ("Tasks.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
   (setq org-tag-alist
-    '((:startgroup)
-       ; Put mutually exclusive tags here
-       (:endgroup)
-       ("@errand" . ?E)
-       ("@home" . ?H)
-       ("@work" . ?W)
-       ("agenda" . ?a)
-       ("planning" . ?p)
-       ("publish" . ?P)
-       ("batch" . ?b)
-       ("note" . ?n)
-       ("idea" . ?i)))
+        '((:startgroup)
+                                        ; Put mutually exclusive tags here
+          (:endgroup)
+          ("@errand" . ?E)
+          ("@home" . ?H)
+          ("@work" . ?W)
+          ("agenda" . ?a)
+          ("planning" . ?p)
+          ("publish" . ?P)
+          ("batch" . ?b)
+          ("note" . ?n)
+          ("idea" . ?i)))
 
   ;; Configure custom agenda views
   (setq org-agenda-custom-commands
-   '(("d" "Dashboard"
-     ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
-      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+        '(("d" "Dashboard"
+           ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))
+            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
-    ("n" "Next Tasks"
-     ((todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))))
+          ("n" "Next Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))))
 
-    ("W" "Work Tasks" tags-todo "+work-email")
+          ("W" "Work Tasks" tags-todo "+work-email")
 
-    ;; Low-effort next actions
-    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-     ((org-agenda-overriding-header "Low Effort Tasks")
-      (org-agenda-max-todos 20)
-      (org-agenda-files org-agenda-files)))
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+           ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))
 
-    ("w" "Workflow Status"
-     ((todo "WAIT"
-            ((org-agenda-overriding-header "Waiting on External")
-             (org-agenda-files org-agenda-files)))
-      (todo "REVIEW"
-            ((org-agenda-overriding-header "In Review")
-             (org-agenda-files org-agenda-files)))
-      (todo "PLAN"
-            ((org-agenda-overriding-header "In Planning")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "BACKLOG"
-            ((org-agenda-overriding-header "Project Backlog")
-             (org-agenda-todo-list-sublevels nil)
-             (org-agenda-files org-agenda-files)))
-      (todo "READY"
-            ((org-agenda-overriding-header "Ready for Work")
-             (org-agenda-files org-agenda-files)))
-      (todo "ACTIVE"
-            ((org-agenda-overriding-header "Active Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "COMPLETED"
-            ((org-agenda-overriding-header "Completed Projects")
-             (org-agenda-files org-agenda-files)))
-      (todo "CANC"
-            ((org-agenda-overriding-header "Cancelled Projects")
-             (org-agenda-files org-agenda-files)))))))
+          ("w" "Workflow Status"
+           ((todo "WAIT"
+                  ((org-agenda-overriding-header "Waiting on External")
+                   (org-agenda-files org-agenda-files)))
+            (todo "REVIEW"
+                  ((org-agenda-overriding-header "In Review")
+                   (org-agenda-files org-agenda-files)))
+            (todo "PLAN"
+                  ((org-agenda-overriding-header "In Planning")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+            (todo "BACKLOG"
+                  ((org-agenda-overriding-header "Project Backlog")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+            (todo "READY"
+                  ((org-agenda-overriding-header "Ready for Work")
+                   (org-agenda-files org-agenda-files)))
+            (todo "ACTIVE"
+                  ((org-agenda-overriding-header "Active Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "COMPLETED"
+                  ((org-agenda-overriding-header "Completed Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "CANC"
+                  ((org-agenda-overriding-header "Cancelled Projects")
+                   (org-agenda-files org-agenda-files)))))))
 
   (setq org-capture-templates
-    `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp (concat lukkadd/org-folder "/Tasks.org") "Inbox")
+        `(("t" "Tasks / Projects")
+          ("tt" "Task" entry (file+olp (concat lukkadd/org-folder "/Tasks.org") "Inbox")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
-      ("j" "Journal Entries")
-      ("jj" "Journal" entry
+          ("j" "Journal Entries")
+          ("jj" "Journal" entry
            (file+olp+datetree (concat lukkadd/org-folder "/Journal.org"))
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
            :clock-in :clock-resume
            :empty-lines 1)
-      ("jm" "Meeting" entry
+          ("jm" "Meeting" entry
            (file+olp+datetree (concat lukkadd/org-folder "/Journal.org"))
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
-      ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree (concat lukkadd/org-folder "/Journal.org"))
+          ("w" "Workflows")
+          ("we" "Checking Email" entry (file+olp+datetree (concat lukkadd/org-folder "/Journal.org"))
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
-      ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline (concat lukkadd/org-folder "/Metrics.org") "Weight")
-       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+          ("m" "Metrics Capture")
+          ("mw" "Weight" table-line (file+headline (concat lukkadd/org-folder "/Metrics.org") "Weight")
+           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
   (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj")))
+              (lambda () (interactive) (org-capture nil "jj")))
 
   (lukkadd/org-font-setup))
 
@@ -418,9 +432,9 @@
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-      (python . t)))
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)))
 
   (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
@@ -493,9 +507,9 @@
 
   ;; Bind `C-c l d` to `dap-hydra` for easy access
   (general-define-key
-    :keymaps 'lsp-mode-map
-    :prefix lsp-keymap-prefix
-    "d" '(dap-hydra t :wk "debugger")))
+   :keymaps 'lsp-mode-map
+   :prefix lsp-keymap-prefix
+   "d" '(dap-hydra t :wk "debugger")))
 
 (use-package typescript-mode
   :mode "\\.ts\\'"
@@ -520,21 +534,21 @@
   (pyvenv-mode 1))
 
 (defun custom-cpp-compile()
-    "Set the compile command to use my custom build script"
-    (interactive)
-    (cd (projectile-project-root))
-    (compile "build.bat")
-    ;(other-window 1)
-    )
+  "Set the compile command to use my custom build script"
+  (interactive)
+  (cd (projectile-project-root))
+  (compile "build.bat")
+                                        ;(other-window 1)
+  )
 
 (defun custom-cpp-run()
   "Run cpp project using my run.bat"
   (interactive)
-   (cd (projectile-project-root))
+  (cd (projectile-project-root))
   (let ((script-path "run.bat"))
-  (compile script-path)
-  ;(other-window 1)
-  ))
+    (compile script-path)
+                                        ;(other-window 1)
+    ))
 
 (general-define-key
  :keymaps 'c++-mode-map
@@ -549,13 +563,22 @@
 (use-package php-mode
   )
 
+(use-package go-mode)
+
+(add-hook 'go-mode-hook 'lsp)
+(add-hook 'go-mode-hook (lambda ()
+                          (setq tab-width 4)
+                          (setq indent-tabs-mode 1)))
+
+(use-package yaml-mode)
+
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
   :bind (:map company-active-map
-         ("<tab>" . company-complete-selection))
-        (:map lsp-mode-map
-         ("<tab>" . company-indent-or-complete-common))
+              ("<tab>" . company-complete-selection))
+  (:map lsp-mode-map
+        ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
@@ -592,6 +615,19 @@
 
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+
+(use-package hl-todo
+  :init
+  (global-hl-todo-mode)
+  :config
+  (setq hl-todo-keyword-faces
+        '(("TODO"   . "#FAE675")
+          ("FIXME"  . "#F23847")
+          ("DEBUG"  . "#ACB7FF")
+          ("STUB"   . "#A0FFA0")))
+  )
+
+;; TODO: Bind todo related keymaps
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
