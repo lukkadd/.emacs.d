@@ -1,3 +1,23 @@
+(defun hexl-view-bits (start end)
+  (interactive "r")
+  (let ((result ""))
+
+    (dolist (char (string-to-list (buffer-substring start end)))
+      (if (char-equal char ?\s ) nil (setq result (concat result " " (int-to-binary-string (string-to-number (char-to-string char) 16))))))
+
+    (message result)))
+
+(defun int-to-binary-string (value)
+  "Convert an integer VALUE to a binary string."
+  (let ((result ""))
+    (while (> value 0)
+      (setq result (concat (if (= (logand value 1) 1) "1" "0") result))
+      (setq value (ash value -1)))
+    (while (< (length result) 4)
+      (setq result(concat "0" result)))
+    result))
+(int-to-binary-string 10)
+
 ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
 ;;       in Emacs and init.el will be generated automatically!
 
@@ -21,7 +41,7 @@
 
 (set-language-environment "UTF-8")
 
-;; Allow emacs to use more memory to minimize multiple garbage collections
+;; Allow emacs to use more memory to minimize garbage collections during startup
 (setq gc-cons-threshold (* 50 1000 1000))
 
 ;; Add hook to emacs startup that displays the startup time in *Messages*
@@ -61,33 +81,45 @@
   (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
 
-;; NOTE: If you want to move everything out of the ~/.emacs.d folder
-    ;; reliably, set `user-emacs-directory` before loading no-littering!
-    ;(setq user-emacs-directory "~/.cache/emacs")
+;; set directory for backup files
+  (setq backup-directory-alist `(("." . ,(expand-file-name "tmp/backups/"
+                                                           user-emacs-directory))))
+  ;; auto-save-mode doesn't create the path automatically
+  (make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
 
-    (use-package no-littering)
+  (setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
+        auto-save-filename-transforms `((".*" ,(expand-file-name "tmp/auto-saves" user-emacs-directory) t)))
 
-(let ((dir (no-littering-expand-var-file-name "lock-files/")))
-    (make-directory dir t)
-    (setq lock-file-name-transforms `((".*" ,dir t))))
+;; move projectile, lsp and session files
+(setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
+      lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
+
+        ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
+        ;; reliably, set `user-emacs-directory` before loading no-littering!
+        ;(setq user-emacs-directory "~/.cache/emacs")
+
+        (use-package no-littering)
+
+    (let ((dir (no-littering-expand-var-file-name "lock-files/")))
+        (make-directory dir t)
+        (setq lock-file-name-transforms `((".*" ,dir t))))
 
 (setq inhibit-startup-message t)
-
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
-
 (menu-bar-mode -1)            ; Disable the menu bar
 
 ;; Set up the visible bell
 (setq visible-bell t)
 
+;; add line numbers (relative)
 (column-number-mode)
 (global-display-line-numbers-mode t)
 (setq display-line-numbers-type 'relative)
 
-;; Set frame transparency
+;; Set frame transparency (Since I'm using 100% transparency it's effectively useless)
 (set-frame-parameter (selected-frame) 'alpha lukkadd/frame-transparency)
 (add-to-list 'default-frame-alist `(alpha . ,lukkadd/frame-transparency))
 (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
@@ -101,13 +133,13 @@
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 ;; Set emacs UI font
-(set-face-attribute 'default nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
+(set-face-attribute 'default t :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
+(set-face-attribute 'fixed-pitch t :font lukkadd/fixed-pitch-font :height lukkadd/default-font-size)
 
 ;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch t :font lukkadd/variable-pitch-font :height lukkadd/default-variable-font-size :weight 'regular)
 
 ;; For new frames
 (add-hook 'after-make-frame-functions
@@ -136,7 +168,7 @@
     "b" '(:ignore t :which-key "buffers")
     "bb" '(switch-to-buffer :which-key "Switch to buffer")
     "bl" '(buffer-menu-other-window :which-key "List buffers")
-    "bk" '(kill-this-buffer :which-key "Kill current buffer")
+    "bk" '(kill-current-buffer :which-key "Kill current buffer")
 
     "o" '(:ignore t :which-key "Org")
     "oa" '(org-agenda :which-key "Org Agenda")
@@ -256,17 +288,18 @@
 
 (use-package dashboard
 
-  :config
-  (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
-  (setq dashboard-startup-banner 'logo)
-  (setq dashboard-center-content t)
-  (setq dashboard-items '((recents   . 5)
-                          (bookmarks . 5)
-                          (projects  . 5)
-                          (agenda    . 5)
-                          (registers . 5)))
-  (setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "/assets/d20.png"))
-  (dashboard-setup-startup-hook))
+    :config
+    (setq dashboard-banner-logo-title "Anvil Emacs")
+    (setq dashboard-startup-banner 'logo)
+    (setq dashboard-center-content t)
+    (setq dashboard-vertically-center-content t)
+    (setq dashboard-items '((recents   . 5)
+                            (bookmarks . 5)
+                            (projects  . 5)
+                            (registers . 5)))
+    (setq dashboard-startup-banner (concat (expand-file-name user-emacs-directory) "assets/anvil.png"))
+    (dashboard-setup-startup-hook))
+(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 
 (defun lukkadd/org-font-setup ()
 
@@ -423,7 +456,7 @@
   (lukkadd/org-font-setup))
 
 (defun lukkadd/org-mode-visual-fill ()
-  (setq visual-fill-column-width 120
+  (setq visual-fill-column-width 100
         visual-fill-column-center-text t)
   (visual-fill-column-mode 1))
 
@@ -455,6 +488,16 @@
       (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'lukkadd/org-babel-tangle-config)))
+
+(setq treesit-language-source-alist
+      '((cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+        (c "https://github.com/tree-sitter/tree-sitter-c")
+        (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+(setq major-mode-remap-alist
+      '((yaml-mode . yaml-ts-mode)
+        (c++-mode . c++-ts-mode)
+        (c-mode . c-ts-mode)))
 
 (use-package git-gutter
 
@@ -538,7 +581,6 @@
   (interactive)
   (cd (projectile-project-root))
   (compile "build.bat")
-                                        ;(other-window 1)
   )
 
 (defun custom-cpp-run()
@@ -547,18 +589,17 @@
   (cd (projectile-project-root))
   (let ((script-path "run.bat"))
     (compile script-path)
-                                        ;(other-window 1)
     ))
 
 (general-define-key
- :keymaps 'c++-mode-map
+ :keymaps 'c++-ts-mode-map
  "<f5>" 'custom-cpp-compile)
 
 (general-define-key
- :keymaps 'c++-mode-map
+ :keymaps 'c++-ts-mode-map
  "<f6>" 'custom-cpp-run)
 
-(add-hook 'c++-mode-hook 'lsp)
+(add-hook 'c++-ts-mode-hook #'lsp-deferred)
 
 (use-package php-mode
   )
@@ -579,9 +620,11 @@
               ("<tab>" . company-complete-selection))
   (:map lsp-mode-map
         ("<tab>" . company-indent-or-complete-common))
+  (:map company-mode-map
+        ("C-<tab>" . company-complete))
   :custom
   (company-minimum-prefix-length 1)
-  (company-idle-delay 0.0))
+  (company-idle-delay nil))
 
 (use-package company-box
   :hook (company-mode . company-box-mode))
