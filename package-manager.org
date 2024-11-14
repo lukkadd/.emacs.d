@@ -1,0 +1,52 @@
+#+title: Package Manager Setup
+#+PROPERTY: header-args:emacs-lisp :tangle package-manager.el
+
+* Package System
+
+We are using package.el (the built in package manager for emacs), but to make some configurations easier we install a wrapper called [[https://github.com/jwiegley/use-package][use-package]].
+
+#+begin_src emacs-lisp 
+
+    ;; Initialize package sources
+    (require 'package)
+
+    (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                             ("org" . "https://orgmode.org/elpa/")
+                             ("elpa" . "https://elpa.gnu.org/packages/")))
+
+    (package-initialize)
+    (unless package-archive-contents
+      (package-refresh-contents))
+
+      ;; Initialize use-package on non-Linux platforms
+    (unless (package-installed-p 'use-package)
+      (package-install 'use-package))
+
+    (unless (package-installed-p 'vc-use-package)
+    (package-vc-install "https://github.com/slotThe/vc-use-package"))
+  (require 'vc-use-package)
+
+  ;; Make sure every package called with use-package is installed
+    (require 'use-package)
+    (setq use-package-always-ensure t)
+
+#+end_src
+
+** Automatic Package Updates
+
+I'm still not sure I want this behaviour. If I let emacs prompt me if I want updates I potentially block the emacs server and cant initialize it. If I don't I potentially lose control of updates.
+For now it's enabled, might revisit it later.
+
+You can also use =M-x auto-package-update-now= to update right now!
+
+#+begin_src emacs-lisp
+
+  (use-package auto-package-update
+      :custom
+      (auto-package-update-interval 7)
+      (auto-package-update-hide-results t)
+      :config
+      (auto-package-update-maybe)
+      (auto-package-update-at-time "09:00"))
+
+#+end_src
