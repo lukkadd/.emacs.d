@@ -1,0 +1,77 @@
+#+title: Programming Languages Setup
+#+PROPERTY: header-args:emacs-lisp :tangle languages.el
+
+* Programming Languages Config
+
+Here I set up syntax highlighting, lsp, treesitter, etc. for the programming languages I use.
+
+** C++
+
+#+begin_src emacs-lisp
+  (defun custom-cpp-compile()
+    "Set the compile command to use my custom build script"
+    (interactive)
+    (message (projectile-project-root))
+    (cd (projectile-project-root))
+    (compile "build.bat")
+    )
+
+  (defun custom-cpp-run()
+    "Run cpp project using my run.bat"
+    (interactive)
+    (cd (projectile-project-root))
+    (let ((script-path "run.bat"))
+      (compile script-path)
+      ))
+
+  (general-define-key
+   :keymaps 'c++-ts-mode-map
+   "<f5>" 'custom-cpp-compile)
+
+  (general-define-key
+   :keymaps 'c++-ts-mode-map
+   "<f6>" 'custom-cpp-run)
+
+  (add-hook 'c++-ts-mode-hook #'lsp-deferred)
+
+#+end_src
+
+** Zig
+
+#+begin_src emacs-lisp
+  (use-package zig-mode)
+ 
+#+end_src
+
+** GDScript
+
+#+begin_src emacs-lisp
+(use-package gdscript-mode
+    :vc (:fetcher github :repo "godotengine/emacs-gdscript-mode"))
+#+end_src
+
+** PHP
+
+Configuring php-mode
+
+#+begin_src emacs-lisp
+  (use-package php-mode
+    )
+#+end_src
+
+** Go
+
+#+begin_src emacs-lisp
+  (use-package go-mode)
+
+  (add-hook 'go-mode-hook 'lsp)
+  (add-hook 'go-mode-hook (lambda ()
+                            (setq tab-width 4)
+                            (setq indent-tabs-mode 1)))
+#+end_src
+
+** Additional languages
+
+#+begin_src emacs-lisp
+  (use-package yaml-mode)
+#+end_src
