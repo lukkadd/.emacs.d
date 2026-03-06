@@ -1,0 +1,26 @@
+# Compiled Elisp
+*.elc
+
+# Native compilation cache
+eln-cache/
+
+# Tree-sitter grammars (auto-downloaded)
+tree-sitter/
+
+# Elpaca package directory
+elpaca/
+
+# Emacs session/state files
+history
+recentf
+auto-save-list/
+projectile-bookmarks.eld
+transient/
+
+# Backup and lock files
+*~
+\#*\#
+.\#*
+
+# Custom settings (if Emacs writes custom-set-variables here)
+custom.el
