@@ -38,6 +38,16 @@ JavaScript, TypeScript, C, Go, Odin, Lua, Elisp
 - Bound directly to `s` / `S` in normal/visual/motion states — no `evil-define-motion` wrapper
 - `evil-define-motion` caused "wrong type argument: listp" errors due to evil passing extra state
 
+## Hover Docs (eldoc-box)
+- `K` in normal/visual/motion shows hover docs in a floating child frame popup via `eldoc-box-help-at-point`
+- `SPC c k` also opens hover docs via `eldoc-doc-buffer` (in a window, useful for pinning)
+- **Must use `:keymaps 'override`** for the `K` binding — evil-collection's mode-specific maps override plain state bindings
+
+## Keybinding Gotchas
+- Global evil state bindings (no keymap) can be silently overridden by evil-collection mode maps
+- Use `:keymaps 'override` for bindings that must win everywhere (like `K`, `s`, `S`)
+- The SPC leader already uses `override` via `general-create-definer`
+
 ## Key Decisions
 - No `package.el`, Elpaca only
 - `evil-want-keybinding nil` required before evil loads (evil-collection takes over)
@@ -45,6 +55,7 @@ JavaScript, TypeScript, C, Go, Odin, Lua, Elisp
 - `elpaca-wait` called after evil block to ensure ordering before evil-collection
 - Nerd Font required for doom-modeline icons (JetBrainsMono Nerd Font recommended)
 - After first install: run `M-x nerd-icons-install-fonts`
+- Directories for backups/auto-saves must be created explicitly with `make-directory` — Emacs won't create them automatically
 
 ## User Preferences
 - Relative line numbers

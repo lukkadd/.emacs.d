@@ -69,6 +69,8 @@
                 tab-width 4)
 
   ;; Keep backup and auto-save files out of the way
+  (make-directory (expand-file-name "backups/"    user-emacs-directory) t)
+  (make-directory (expand-file-name "auto-saves/" user-emacs-directory) t)
   (setq backup-directory-alist
         `(("." . ,(expand-file-name "backups/" user-emacs-directory)))
         auto-save-file-name-transforms
@@ -312,6 +314,12 @@
   :bind (:map eglot-mode-map
               ("M-g s" . consult-eglot-symbols)))
 
+;;; ── Eldoc Box (hover popup) ───────────────────────────────────────────────────
+
+(use-package eldoc-box
+  :demand t
+  :after eglot)
+
 ;;; ── Treesitter ────────────────────────────────────────────────────────────────
 
 (use-package emacs
@@ -439,11 +447,16 @@
         dashboard-icon-type 'nerd-icons
         dashboard-set-heading-icons t
         dashboard-set-file-icons t
+        dashboard-projects-backend 'projectile
         dashboard-items '((recents   . 7)
                           (projects  . 5)
                           (bookmarks . 3)))
   :config
   (dashboard-setup-startup-hook))
+
+;; 4-space indent for JS/TS family (default is 2)
+(setq js-indent-level 4
+      typescript-ts-mode-indent-offset 4)
 
 ;; Indent guides — uses treesitter for accurate placement.
 (use-package indent-bars

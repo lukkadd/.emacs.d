@@ -24,3 +24,5 @@ transient/
 
 # Custom settings (if Emacs writes custom-set-variables here)
 custom.el
+
+eshell/

@@ -6,8 +6,13 @@
 
 (general-define-key
   :states '(normal visual motion)
-  "s" '(avy-goto-char-2 :which-key "jump to char")
-  "S" '(avy-goto-line   :which-key "jump to line"))
+  "s" '(avy-goto-char-2        :which-key "jump to char")
+  "S" '(avy-goto-line          :which-key "jump to line"))
+
+(general-define-key
+  :states '(normal visual motion)
+  :keymaps 'override
+  "K" '(eldoc-box-help-at-point :which-key "hover docs"))
 
 ;;; ── Buffers ───────────────────────────────────────────────────────────────────
 
